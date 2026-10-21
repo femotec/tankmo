@@ -27,6 +27,8 @@ Die sieben Browser-Szenarien prüfen:
 6. Mobile Light-/Dark-Screenshots und Desktop-Screenshot ohne JavaScript-Seitenfehler.
 7. Manifestpfade, Icons und Verbrauchsanzeige aus importierten Volltank-/Teilfüllungsdaten: 6,0 L/100 km und 10,84 €/100 km.
 
-Nicht durchgeführt: Veröffentlichung auf einem GitHub-Konto, GitHub-Actions-Ausführung auf dem Server, tatsächliche iPhone-Installation, echter Flugmodus oder iOS-Teilen nach iCloud Drive. Die Browserprüfung ersetzt diese Geräteprüfung nicht. Es bestehen keine verbundenen Hosting-Zugangsdaten; Deployment ist vorbereitet und in der README beschrieben.
+Veröffentlicht am 21. Oktober 2026: [Tankmo](https://femotec.github.io/tankmo/) aus dem öffentlichen Repository [femotec/tankmo](https://github.com/femotec/tankmo). Der [erste GitHub-Actions-Lauf](https://github.com/femotec/tankmo/actions/runs/39668303556) hat Installation, TypeScript, Lint, Unit-Tests, Produktionsbuild und Pages-Deployment erfolgreich abgeschlossen. Der veröffentlichte Quellbaum entspricht exakt dem lokal geprüften Quellbaum `34aed8b609f213ff3295bb661239c73a1db6305a`. Über HTTPS wurden HTML, JavaScript, Manifest, alle Manifest-Icons und Service Worker mit HTTP 200 geprüft; `start_url` und `scope` sind `/tankmo/`. Die veröffentlichte App wurde im Browser geöffnet und bestätigt die Bereitschaft zur Offline-Nutzung.
+
+Nicht durchgeführt: tatsächliche iPhone-Installation, echter Flugmodus oder iOS-Teilen nach iCloud Drive. Die Browserprüfung ersetzt diese Geräteprüfung nicht. Persönliche Tankdaten wurden nicht hochgeladen.
 
 Der Build meldet zwei harmlose Kommentare zu Optimierungsannotationen innerhalb von Zod; diese Kommentare werden beim Bündeln entfernt. Der Build und die Service-Worker-Erzeugung schließen erfolgreich ab.

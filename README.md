@@ -1,5 +1,9 @@
 # Tankmo
 
+**Live-App:** [Tankmo auf dem iPhone öffnen](https://femotec.github.io/tankmo/) · [GitHub-Repository](https://github.com/femotec/tankmo)
+
+Die App ist über HTTPS veröffentlicht. Zum Installieren die Live-Adresse in Safari öffnen und im Teilen-Menü „Zum Home-Bildschirm“ wählen.
+
 Privates, offlinefähiges Tankbuch als React-/TypeScript-PWA für das iPhone. Deutsche Oberfläche, EUR, Liter und Kilometer. Ohne Konto, Backend, Telemetrie, Werbung oder externe Laufzeitdienste. Das Design ist eine eigenständige Web-Interpretation von Liquid Glass, keine native SwiftUI-Oberfläche.
 
 ## Unter Windows starten
