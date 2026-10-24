@@ -2,7 +2,7 @@
 
 Für deinen Anwendungsfall ist dieser Weg möglich: GitHub baut Tankmo auf einem macOS-Runner mit Xcode. Du lädst die erzeugte IPA-Datei auf deinen Windows-PC herunter. Sideloadly signiert sie mit deinem Apple Account und installiert sie auf deinem iPhone. Der Mac deines Freundes ist für diesen Ablauf nicht nötig.
 
-**Stand der Vorbereitung:** Das Projekt und der GitHub-Workflow sind vorbereitet. Die Installation mit deinem Apple Account, die Erneuerung der Signatur und der echte iPhone-Test sind separate Schritte auf deinem PC. Der Workflow enthält keine Apple-Zugangsdaten und erzeugt eine noch nicht signierte IPA; sie lässt sich nicht einfach durch Antippen auf dem iPhone installieren.
+**Erster Build erfolgreich:** Am 24. Oktober 2026 wurde die native App mit Xcode 26.3 auf GitHub gebaut und als IPA bereitgestellt: [IPA-Artefakt herunterladen](https://github.com/femotec/tankmo/actions/runs/40103407725/artifacts/12563289535). Die Installation mit deinem Apple Account, die Erneuerung der Signatur und der echte iPhone-Test sind separate Schritte auf deinem PC. Der Workflow enthält keine Apple-Zugangsdaten und erzeugt eine noch nicht signierte IPA; sie lässt sich nicht einfach durch Antippen auf dem iPhone installieren.
 
 ## 1. IPA von GitHub herunterladen
 
