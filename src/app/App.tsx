@@ -22,7 +22,13 @@ import {
   Download,
 } from "lucide-react";
 import { registerSW } from "virtual:pwa-register";
-import { db, deleteFuel, initialize } from "../db/database";
+import { db } from "../db/database";
+import {
+  initializeLocal,
+  writeLocal,
+  deleteFuelLocal as deleteFuel,
+} from "../db/persistence";
+import { isIOSApp } from "../platform/native";
 import {
   defaultSettings,
   fuelNames,
@@ -57,7 +63,7 @@ export default function App() {
     [initError, setInitError] = useState(""),
     [ready, setReady] = useState(false),
     [online, setOnline] = useState(navigator.onLine),
-    [offlineReady, setOfflineReady] = useState(false),
+    [offlineReady, setOfflineReady] = useState(isIOSApp),
     [update, setUpdate] = useState<(() => void) | null>(null);
   const scroll = useRef<Partial<Record<Tab, number>>>({});
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,14 +83,16 @@ export default function App() {
   );
   const settings = data?.settings ?? defaultSettings;
   useEffect(() => {
-    initialize()
+    initializeLocal()
       .then(() => {
         setReady(true);
-        navigator.storage?.persist?.().catch(() => {});
+        if (!isIOSApp) navigator.storage?.persist?.().catch(() => {});
       })
       .catch(() =>
         setInitError(
-          "Tankmo kann den lokalen Speicher nicht öffnen. Bitte erlaube Browser-Speicher und prüfe den freien Speicherplatz. Bestehende Daten werden nicht gelöscht.",
+          isIOSApp
+            ? "Tankmo kann den lokalen App-Speicher nicht öffnen. Bitte prüfe den freien Speicherplatz und starte die App erneut. Bestehende Dateien werden nicht gelöscht."
+            : "Tankmo kann den lokalen Speicher nicht öffnen. Bitte erlaube Browser-Speicher und prüfe den freien Speicherplatz. Bestehende Daten werden nicht gelöscht.",
         ),
       );
   }, []);
@@ -92,6 +100,11 @@ export default function App() {
     const changed = () => setOnline(navigator.onLine);
     window.addEventListener("online", changed);
     window.addEventListener("offline", changed);
+    if (isIOSApp)
+      return () => {
+        window.removeEventListener("online", changed);
+        window.removeEventListener("offline", changed);
+      };
     const updater = registerSW({
       onOfflineReady: () => setOfflineReady(true),
       onNeedRefresh: () =>
@@ -127,9 +140,9 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(""), 6000);
   };
   const changeSettings = (patch: Partial<AppSettings>) => {
-    db.settings
-      .put({ ...settings, ...patch })
-      .catch(() => notify("Einstellung konnte nicht gespeichert werden."));
+    writeLocal(() => db.settings.update("main", patch)).catch(() =>
+      notify("Einstellung konnte nicht gespeichert werden."),
+    );
   };
   const changeTab = (next: Tab) => {
     scroll.current[tab] = window.scrollY;
@@ -418,7 +431,9 @@ export default function App() {
                     onClick={async () => {
                       if (confirm("Diesen Kilometerstand löschen?"))
                         try {
-                          await db.odometer.delete(modal.entry!.id);
+                          await writeLocal(() =>
+                            db.odometer.delete(modal.entry!.id),
+                          );
                           closeModal();
                           notify("Kilometerstand gelöscht.");
                         } catch {

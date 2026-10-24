@@ -6,6 +6,9 @@ export default ts.config(
   {
     ignores: [
       "dist/**",
+      "dist-native/**",
+      "ios/**",
+      "releases/**",
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",

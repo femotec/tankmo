@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, Fuel } from "lucide-react";
 import { db } from "../db/database";
+import { writeLocal } from "../db/persistence";
 import {
   type AppSettings,
   type FuelEntry,
@@ -119,12 +120,12 @@ export function EntryForm({
           )
         )
           return;
-        await db.fuel.put(validated.data);
+        await writeLocal(() => db.fuel.put(validated.data));
       } else {
         const validated = odometerSchema.safeParse(base);
         if (!validated.success)
           throw new Error("Bitte einen gültigen Kilometerstand eintragen.");
-        await db.odometer.put(validated.data);
+        await writeLocal(() => db.odometer.put(validated.data));
       }
       onSaved();
     } catch (err) {

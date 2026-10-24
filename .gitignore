@@ -1,5 +1,16 @@
 node_modules/
+releases/
 dist/
+dist-native/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/App/Pods/
+ios/**/xcuserdata/
+ios/**/DerivedData/
+ios/**/.build/
+*.ipa
+*.xcarchive
 test-results/
 playwright-report/
 *.local

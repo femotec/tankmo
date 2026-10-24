@@ -12,7 +12,9 @@ import {
   Moon,
   Monitor,
 } from "lucide-react";
-import { db, clearData } from "../db/database";
+import { db } from "../db/database";
+import { writeLocal, clearLocalData as clearData } from "../db/persistence";
+import { isIOSApp } from "../platform/native";
 import {
   type AppSettings,
   type FuelStation,
@@ -76,9 +78,11 @@ export function Settings({
         format === "csv" ? "text/csv;charset=utf-8" : "application/json",
       );
       if (saved && format === "json")
-        await db.settings.update("main", {
-          lastBackup: new Date().toISOString(),
-        });
+        await writeLocal(() =>
+          db.settings.update("main", {
+            lastBackup: new Date().toISOString(),
+          }),
+        );
       if (saved) notify("Datei zum Speichern bereitgestellt.");
     } catch {
       notify("Export fehlgeschlagen. Bitte erneut versuchen.");
@@ -142,12 +146,14 @@ export function Settings({
     }
     setBusy(true);
     try {
-      await db.stations.put({
-        ...(station ?? meta()),
-        name: name.trim(),
-        locationDescription: location.trim() || undefined,
-        updatedAt: new Date().toISOString(),
-      });
+      await writeLocal(() =>
+        db.stations.put({
+          ...(station ?? meta()),
+          name: name.trim(),
+          locationDescription: location.trim() || undefined,
+          updatedAt: new Date().toISOString(),
+        }),
+      );
       setStation(undefined);
       notify("Tankstelle gespeichert.");
     } catch {
@@ -245,10 +251,12 @@ export function Settings({
                         )
                       )
                         try {
-                          await db.stations.update(s.id, {
-                            deleted: true,
-                            updatedAt: new Date().toISOString(),
-                          });
+                          await writeLocal(() =>
+                            db.stations.update(s.id, {
+                              deleted: true,
+                              updatedAt: new Date().toISOString(),
+                            }),
+                          );
                           notify("Tankstelle archiviert.");
                         } catch {
                           notify("Löschen fehlgeschlagen.");
@@ -353,16 +361,23 @@ export function Settings({
           <HardDrive size={18} /> Lokaler Speicher
         </h3>
         <p className="muted small">
-          IndexedDB · Datenbankschema 1 · {count} Tankvorgänge
+          {isIOSApp ? "Automatisch im App-Speicher" : "IndexedDB"} ·
+          Datenbankschema 1 · {count} Tankvorgänge
         </p>
         <p className="muted small">
-          Browserdaten können durch Aufräumen, Speichermangel oder das
-          Betriebssystem verloren gehen. Ein Export ist deine unabhängige
-          Sicherung.
+          {isIOSApp
+            ? "Nach „Speichern“ liegen deine Einträge automatisch lokal auf diesem iPhone und werden beim nächsten Start geladen. Beim Löschen der App können ihre Daten verloren gehen. Ein Export ist deine unabhängige Sicherung."
+            : "Browserdaten können durch Aufräumen, Speichermangel oder das Betriebssystem verloren gehen. Ein Export ist deine unabhängige Sicherung."}
         </p>
         <button
           className="secondary"
           onClick={async () => {
+            if (isIOSApp) {
+              setStorage(
+                "Die lokale App-Datei wird nach jeder bestätigten Änderung automatisch aktualisiert. Dafür ist keine Internetverbindung nötig.",
+              );
+              return;
+            }
             try {
               const granted = await navigator.storage?.persist?.();
               const estimate = await navigator.storage?.estimate?.();
@@ -418,9 +433,11 @@ export function Settings({
         </h3>
         <p>Mit jedem Kilometer ein besserer Überblick.</p>
         <small>
-          {offlineReady
-            ? "App für die Offline-Nutzung bereit."
-            : "Offline-Cache noch nicht bestätigt. Einmal online vollständig laden."}
+          {isIOSApp
+            ? "iPhone-App · App-Dateien und Einträge lokal verfügbar."
+            : offlineReady
+              ? "App für die Offline-Nutzung bereit."
+              : "Offline-Cache noch nicht bestätigt. Einmal online vollständig laden."}
           <br />
           Privat. Ohne Konto. Ohne Tracking.
         </small>

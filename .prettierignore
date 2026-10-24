@@ -1,4 +1,7 @@
 node_modules
+dist-native
+ios
+releases
 dist
 test-results
 playwright-report
