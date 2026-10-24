@@ -11,9 +11,17 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "icons": "node scripts/icons.mjs"
+    "icons": "node scripts/icons.mjs",
+    "build:native": "tsc -b && vite build --mode native",
+    "ios:sync": "npm run build:native && cap sync ios && npm run ios:check",
+    "ios:open": "cap open ios",
+    "ios:prepare": "npm run ios:sync && cap open ios",
+    "ios:check": "node scripts/check-ios.mjs",
+    "icons:ios": "node scripts/ios-icons.mjs"
   },
   "dependencies": {
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "dexie": "^4.2.0",
@@ -25,6 +33,7 @@
     "papaparse": "^5.5.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
     "@eslint/js": "^9.36.0",
     "eslint": "^9.36.0",
     "typescript-eslint": "^8.44.0",

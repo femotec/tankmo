@@ -1,5 +1,9 @@
 # Tankmo
 
+**Installation mit Windows:** [IPA auf GitHub bauen und mit Sideloadly installieren](docs/SIDELOADING-WINDOWS.md). Dafür ist kein eigener Mac nötig; kostenlose Apple-Signaturen müssen regelmäßig erneuert werden.
+
+**Neu: iPhone-App für Xcode.** Das Projekt enthält jetzt eine Capacitor-iOS-Version mit gebündelter Offline-Oberfläche und automatischer Speicherung in einer lokalen App-Datei. Die vollständige [Mac-/Xcode-Anleitung](docs/IOS-XCODE.md) erklärt Installation, Signierung und Datenübernahme. Auf dem Mac: `npm ci`, `npm run ios:sync`, `npm run ios:open`.
+
 **Live-App:** [Tankmo auf dem iPhone öffnen](https://femotec.github.io/tankmo/) · [GitHub-Repository](https://github.com/femotec/tankmo)
 
 Die App ist über HTTPS veröffentlicht. Zum Installieren die Live-Adresse in Safari öffnen und im Teilen-Menü „Zum Home-Bildschirm“ wählen.
@@ -148,4 +152,3 @@ Auf dem eigenen iPhone noch prüfen: Installation in Safari, Home-Screen-Start o
 Die PWA-Konfiguration folgt den [vite-plugin-pwa-Optionen](https://github.com/vite-pwa/vite-plugin-pwa/blob/main/src/types.ts); das Schema folgt der [Dexie-Dokumentation](https://dexie.org/docs/Version/Version.stores%28%29).
 
 Weitere Bereitstellungsdetails: [Offizielle GitHub-Pages-Workflow-Anleitung](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
-

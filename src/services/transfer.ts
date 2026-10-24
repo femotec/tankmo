@@ -1,21 +1,12 @@
 import Papa from "papaparse";
 import { db } from "../db/database";
 import { type Backup, defaultSettings } from "../models/types";
+import { readSnapshot } from "../db/snapshot";
+import { writeLocal } from "../db/persistence";
+import { isIOSApp, NativeLocalData } from "../platform/native";
 import { backupSchema } from "../utils/validation";
 export async function snapshot(): Promise<Backup> {
-  return db.transaction(
-    "r",
-    [db.fuel, db.odometer, db.stations, db.settings],
-    async () => ({
-      schemaVersion: 1,
-      appVersion: "1.0.0",
-      createdAt: new Date().toISOString(),
-      fuel: await db.fuel.toArray(),
-      odometer: await db.odometer.toArray(),
-      stations: await db.stations.toArray(),
-      settings: (await db.settings.get("main")) ?? defaultSettings,
-    }),
-  );
+  return readSnapshot();
 }
 export function parseBackup(text: string): Backup {
   try {
@@ -123,46 +114,50 @@ export async function previewImport(b: Backup) {
 }
 export async function restore(b: Backup, policy: ImportPolicy) {
   const valid = backupSchema.parse(b);
-  return db.transaction(
-    "rw",
-    [db.fuel, db.odometer, db.stations, db.settings],
-    async () => {
-      let imported = 0,
-        skipped = 0;
-      if (policy === "replace")
-        await Promise.all([
-          db.fuel.clear(),
-          db.odometer.clear(),
-          db.stations.clear(),
-          db.settings.clear(),
-        ]);
-      for (const key of ["stations", "fuel", "odometer"] as const) {
-        for (const row of valid[key]) {
-          if (policy === "skip" && (await db.table(key).get(row.id))) {
-            skipped++;
-            continue;
+  return writeLocal(() =>
+    db.transaction(
+      "rw",
+      [db.fuel, db.odometer, db.stations, db.settings],
+      async () => {
+        let imported = 0,
+          skipped = 0;
+        if (policy === "replace")
+          await Promise.all([
+            db.fuel.clear(),
+            db.odometer.clear(),
+            db.stations.clear(),
+            db.settings.clear(),
+          ]);
+        for (const key of ["stations", "fuel", "odometer"] as const) {
+          for (const row of valid[key]) {
+            if (policy === "skip" && (await db.table(key).get(row.id))) {
+              skipped++;
+              continue;
+            }
+            await db.table(key).put(row);
+            imported++;
           }
-          await db.table(key).put(row);
-          imported++;
         }
-      }
-      if (policy === "replace") await db.settings.put(valid.settings);
-      for (const key of ["stations", "fuel", "odometer"] as const) {
-        const ids = new Set(
-          (await db.table(key).toArray()).map((r: { id: string }) => r.id),
-        );
-        if (!valid[key].every((r) => ids.has(r.id)))
-          throw new Error(
-            "Die Wiederherstellung konnte nicht verifiziert werden.",
+        if (policy === "replace") await db.settings.put(valid.settings);
+        for (const key of ["stations", "fuel", "odometer"] as const) {
+          const ids = new Set(
+            (await db.table(key).toArray()).map((r: { id: string }) => r.id),
           );
-        if (policy === "replace" && ids.size !== valid[key].length)
-          throw new Error("Die Datensatzanzahl stimmt nicht überein.");
-      }
-      return { imported, skipped };
-    },
+          if (!valid[key].every((r) => ids.has(r.id)))
+            throw new Error(
+              "Die Wiederherstellung konnte nicht verifiziert werden.",
+            );
+          if (policy === "replace" && ids.size !== valid[key].length)
+            throw new Error("Die Datensatzanzahl stimmt nicht überein.");
+        }
+        return { imported, skipped };
+      },
+    ),
   );
 }
 export async function shareFile(content: string, name: string, type: string) {
+  if (isIOSApp)
+    return (await NativeLocalData.share({ content, name })).completed;
   const file = new File([content], name, { type });
   if (navigator.canShare?.({ files: [file] })) {
     try {

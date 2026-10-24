@@ -1,0 +1,51 @@
+name: Tankmo iOS für Xcode prüfen
+on:
+  push:
+    branches: [codex/ios-app]
+  pull_request:
+    paths:
+      [
+        "ios/**",
+        "src/**",
+        "scripts/**",
+        "package*.json",
+        "capacitor.config.ts",
+        "vite.config.ts",
+        ".github/workflows/ios-check.yml",
+      ]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ios:
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run ios:sync
+      - name: Xcode-Version anzeigen
+        run: xcodebuild -version
+      - name: iOS-App ohne persönliche Signatur bauen
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -derivedDataPath build/ios CODE_SIGNING_ALLOWED=NO build
+      - name: IPA für anschließende Signierung mit Sideloadly erstellen
+        run: |
+          mkdir -p build/sideload/Payload
+          ditto build/ios/Build/Products/Release-iphoneos/App.app build/sideload/Payload/Tankmo.app
+          cd build/sideload
+          ditto -c -k --keepParent Payload Tankmo-unsigned.ipa
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Tankmo-IPA-zum-Sideloaden
+          path: build/sideload/Tankmo-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
